@@ -22,7 +22,7 @@ st.write("This app predicts whether a customer will churn or stay, based on thei
 # ==========================
 # Load the trained model
 # ==========================
-model_path = path.join("Model", "customer_churn_pipeline.pkl")   # Ensure your model is saved here
+model_path = path.join("model", "customer_churn_pipeline.pkl")   # Ensure your model is saved here
 churn_predictor = joblib.load(model_path)
 
 # ==========================
