@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-from os import path
+from pathlib import Path
 import joblib
 import sklearn.compose._column_transformer as ct
 
@@ -20,9 +20,15 @@ st.title("Customer Churn Prediction")
 st.write("This app predicts whether a customer will churn or stay, based on their details.")
 
 # ==========================
-# Load the trained model
+# Load the trained model (deployment-safe)
 # ==========================
-model_path = path.join("model", "customer_churn_pipeline.pkl")   # Ensure your model is saved here
+BASE_DIR = Path(__file__).parent
+model_path = BASE_DIR / "model" / "customer_churn_pipeline.pkl"  # Ensure lowercase 'model' folder
+
+if not model_path.exists():
+    st.error(f"Model file not found at {model_path}")
+    st.stop()  # Stop the app if model not found
+
 churn_predictor = joblib.load(model_path)
 
 # ==========================
@@ -34,7 +40,7 @@ gender = st.selectbox("Gender", ["Male", "Female"])
 SeniorCitizen = st.radio("Senior Citizen", ["Yes", "No"])
 Partner = st.radio("Partner", ["Yes", "No"])
 Dependents = st.radio("Dependents", ["Yes", "No"])
-tenure = st.slider("Tenure (Months)", min_value=0, max_value=100, step=1)
+tenure = st.slider("Tenure (Months)", 0, 100, 0)
 PhoneService = st.radio("Phone Service", ["Yes", "No"])
 MultipleLines = st.selectbox("Multiple Lines", ["Yes", "No", "No phone service"])
 InternetService = st.selectbox("Internet Service", ["DSL", "Fiber optic", "No"])
@@ -50,8 +56,8 @@ PaymentMethod = st.selectbox("Payment Method", [
     "Electronic check", "Mailed check",
     "Bank transfer (automatic)", "Credit card (automatic)"
 ])
-MonthlyCharges = st.slider("Monthly Charges($)", min_value=0, max_value=150, step=1, value=50)
-TotalCharges = st.slider("Total Charges ($)", min_value=0, max_value=10000, step=50, value=1000)
+MonthlyCharges = st.slider("Monthly Charges ($)", 0, 150, 50)
+TotalCharges = st.slider("Total Charges ($)", 0, 10000, 1000)
 
 # Convert SeniorCitizen Yes/No → 1/0
 SeniorCitizen_val = 1 if SeniorCitizen == "Yes" else 0
@@ -61,7 +67,7 @@ SeniorCitizen_val = 1 if SeniorCitizen == "Yes" else 0
 # ==========================
 user_input = pd.DataFrame([{
     "gender": gender,
-    "SeniorCitizen": SeniorCitizen_val,   # ✅ fixed
+    "SeniorCitizen": SeniorCitizen_val,
     "Partner": Partner,
     "Dependents": Dependents,
     "tenure": tenure,
@@ -82,7 +88,7 @@ user_input = pd.DataFrame([{
 }])
 
 st.write("### Input Data Preview")
-st.write(user_input)
+st.dataframe(user_input)
 
 # ==========================
 # Prediction
